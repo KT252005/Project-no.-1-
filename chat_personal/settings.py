@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-vj3yv#mu4b%t1ocvkdtw1a5q+jc_%ou_dzx@#(v+oh-6g#iqiv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS =  ['project-no-1.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS =  ['project-no-1-1.onrender.com', 'localhost', '127.0.0.1']
 
 
 
@@ -121,7 +121,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-   "chat_personal\static",
+ os.path.join(BASE_DIR,"chat_personal/static",
 ]
 
 # Default primary key field type
