@@ -23,7 +23,7 @@ def home(request):
     return render(request,"index.html")
 
 def access(request):
-      return render(request,"access.html")
+      return redirect("/iotdashboard")
 
 def registration(request):
     form = SignupForm()

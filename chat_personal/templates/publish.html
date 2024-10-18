@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>IoT Connection</h1>
+
+    <!-- Form to publish messages -->
+    <form id="commandForm" method="POST" action="publish-form/publish/">
+            <label for="command">Command:</label>
+            <select id="command" name="command" required>
+                <option value="">Select a command</option> <!-- Placeholder option -->
+                <option value="1">ON</option>
+                <option value="0">OFF</option>
+            </select>
+            <button type="submit">Publish Command</button>
+        </form>
+        
+    </form>
+    
+    <script>
+        document.getElementById('commandForm').onsubmit = async function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const command = document.getElementById('command').value;
+    
+            try {
+                const response = await fetch('publish/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `command=${encodeURIComponent(command)}`,
+                });
+    
+                const result = await response.json();
+                alert(result.message); // Show response message
+            } catch (error) {
+                alert('Error: ' + error.message); // Handle error
+            }
+        };
+    </script>
+    
+ 
+
+</body>
+</html>
