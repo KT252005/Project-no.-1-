@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speedometer Temperature & Humidity</title>
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+    <style>
+        /* Styles for the gauge container and items */
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 50px auto;
+            width: 50%;
+        }
+
+        .gauge-item {
+            width: 100%;
+            height: 80%;
+            max-width: 320px; /* Increased the max width */
+            max-height: 320px; /* Increased the max height */
+        }
+        {% comment %} .gauge humidityGauge{
+
+        } {% endcomment %}
+
+        h3 {
+            text-align: center;
+        }
+
+        /* Centering the main title */
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>IoT Greenhouse Monitor</h1>
+    
+    <!-- Gauge containers for Temperature and Humidity -->
+    <div class="gauge-container">
+        <div>
+            <canvas id="temperatureGauge" class="gauge-item"></canvas>
+            <h3>Temperature (°C)</h3>
+        </div>
+        <div>
+            <canvas id="humidityGauge" class="gauge-item"></canvas>
+            <h3>Humidity (%)</h3>
+        </div>
+    </div>
+
+    <script>
+        // Function to create a gauge with specified options
+        function createGauge(elementId, maxValue) {
+            const options = {
+                angle: 0.2, // Increased angle for a broader display
+                lineWidth: 0.2, // Adjusted thickness for better visualization
+                radiusScale: 0.9, // Reduced radius slightly to avoid cropping
+                pointer: {
+                    length: 0.6, // Adjusted pointer length to better fit the gauge
+                    strokeWidth: 0.04,
+                    color: '#4CAF50'
+                },
+                limitMax: false,
+                limitMin: false,
+                colorStart: '#6FADCF',
+                colorStop: '#8FC0DA',
+                strokeColor: '#E0E0E0',
+                generateGradient: true,
+                highDpiSupport: true,
+            };
+            const gauge = new Gauge(document.getElementById(elementId)).setOptions(options);
+            gauge.maxValue = maxValue;
+            gauge.setMinValue(0);
+            gauge.animationSpeed = 32; // Set animation speed
+            return gauge;
+        }
+
+        // Create Temperature and Humidity Gauges
+        const temperatureGauge = createGauge("temperatureGauge", 50);
+        const humidityGauge = createGauge("humidityGauge", 100);
+
+        // Function to fetch data from ESP
+        async function fetchSensorData() {
+            try {
+                const response = await fetch('http://your-esp-ip/sensor-data'); // Replace with actual endpoint
+                const data = await response.json();
+
+                // Assuming the ESP returns { temperature: 24, humidity: 60 }
+                if (data.temperature !== undefined && data.humidity !== undefined) {
+                    temperatureGauge.set(data.temperature);
+                    humidityGauge.set(data.humidity);
+                } else {
+                    console.error('Invalid data format:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching sensor data:', error);
+            }
+        }
+
+        // Fetch the data every 5 seconds
+        setInterval(fetchSensorData, 5000);
+        // Initial fetch
+        fetchSensorData();
+    </script>
+</body>
+</html>

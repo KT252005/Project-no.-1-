@@ -80,6 +80,23 @@
             font-size: 18px;
             text-align: center;
         }
+
+        /* Spinner for Loading State */
+        .spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -88,8 +105,7 @@
     <div class="sidenav">
         <a href="">Home</a>
         <a href="publish-form/">Plants</a>
-        <a href="#clients">Clients</a>
-        <a href="#contact">Contact</a>
+        <a href="live_tracking/">Live Tracking</a>
     </div>
 
     <!-- Main Content -->
@@ -97,43 +113,85 @@
         <h1>Connect to IoT Device</h1>
         <button id="connectButton" onclick="connectToDevice()">Connect to Device</button>
         <div id="status">Status: Not connected</div>
+        <div class="spinner" id="loadingSpinner"></div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.0.0/mqtt.min.js"></script>
     <script>
+        let mqttClient;
+
+        // Initialize the MQTT connection
+        function initMQTT() {
+            mqttClient = mqtt.connect('wss://test.mosquitto.org:8081');
+
+            mqttClient.on('connect', () => {
+                updateStatus('Connected');
+            });
+
+            mqttClient.on('error', (err) => {
+                updateStatus(`Error - ${err.message}`);
+            });
+
+            mqttClient.on('offline', () => {
+                updateStatus('Disconnected');
+            });
+
+            mqttClient.on('message', (topic, message) => {
+                console.log(`Received message on ${topic}: ${message.toString()}`);
+            });
+
+            mqttClient.on('close', () => {
+                updateStatus('Disconnected');
+            });
+        }
+
+        // Connect to the IoT device and handle the connection
         async function connectToDevice() {
             const button = document.getElementById('connectButton');
             const status = document.getElementById('status');
 
-            // Disable the button and update status to 'Connecting'
             button.disabled = true;
-            status.textContent = 'Status: Connecting...';
+            updateStatus('Connecting...');
+            showLoading();
 
             try {
-                // Request to connect to IoT device via backend
-                const response = await fetch('connect/', {
-                    method: 'GET',
-                });
+                const response = await fetch('connect/', { method: 'GET' });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
 
                 const result = await response.json();
-
-                // Update the UI based on the result
                 if (result.status === 'connected') {
-                    status.textContent = 'Status: Connected';
+                    updateStatus('Connected');
                     button.textContent = 'Connected';
-                    button.disabled = true;
                 } else {
                     throw new Error(result.message || 'Connection failed');
                 }
             } catch (error) {
-                status.textContent = `Status: Error - ${error.message}`;
+                updateStatus(`Error - ${error.message}`);
             } finally {
-                button.disabled = false;  // Re-enable the button
+                button.disabled = false;
+                hideLoading();
             }
         }
+
+        // Update the status text
+        function updateStatus(message) {
+            document.getElementById('status').textContent = `Status: ${message}`;
+            hideLoading();
+        }
+
+        // Show loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        // Hide loading spinner
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Initialize the MQTT connection on page load
+        window.addEventListener('load', initMQTT);
     </script>
 
 </body>
