@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,6 +60,18 @@
             margin-bottom: 20px;
         }
 
+        /* Logo and Image Styles */
+        .logo-container {
+            margin-bottom: 20px; /* Space below the logo/image */
+            text-align: center; /* Center the logo/image */
+        }
+
+        .logo-container img {
+            max-width: 100%; /* Responsive logo */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 10px; /* Space below the image */
+        }
+
         #connectButton {
             padding: 12px 24px;
             background-color: #4CAF50;
@@ -110,6 +123,10 @@
 
     <!-- Main Content -->
     <div class="content">
+        <!-- Logo and Image Section -->
+        <div class="logo-container">
+            <img src="{% static 'logo.jpg' %}" alt="Logo" />
+        </div>
         <h1>Connect to IoT Device</h1>
         <button id="connectButton" onclick="connectToDevice()">Connect to Device</button>
         <div id="status">Status: Not connected</div>

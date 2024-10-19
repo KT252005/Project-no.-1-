@@ -160,7 +160,7 @@ h1 {
         
                 try {
                     // Make a POST request to the publish API
-                    const response = await fetch("publishapi", {
+                    const response = await fetch("publish-form/publish/", {
                         method: "POST",
                         headers: {
                             'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ h1 {
         
                     if (response.ok) {
                         // Redirect back to the live tracking page if successful
-                        window.location.href = "";  // Adjust URL if necessary
+                        window.location.href = "iotdashboard/publish-form/";  // Adjust URL if necessary
                     } else {
                         console.error("Failed to send data", response.statusText);
                     }

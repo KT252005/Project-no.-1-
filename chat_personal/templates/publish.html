@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IoT Connection</title>
+    <title>Oarameters Connection</title>
     <style>
         /* General Styles */
         * {
@@ -196,28 +196,27 @@
             const humidity = document.getElementById('humidity').value;
 
             try {
-                const response = await fetch('publish', {
+                const response = await fetch('iotdashboard/tracking/publish-form/publish/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `command=${encodeURIComponent(command)}&temperature=${encodeURIComponent(temperature)}&humidity=${encodeURIComponent(humidity)}`,
-                });
-
+            headers: {
+                'Content-Type': 'application/json',  // Set to JSON
+            },
+            body: JSON.stringify({
+                command: command,
+                temperature: temperature,
+                humidity: humidity
+            }),
+        });
                 const result = await response.json();
-                alert(result.message); // Show response message
+                alert(result.message);
+                
+                window.location.href = 'iotdashboard/live_tracking';// Show response message
             } catch (error) {
                 alert('Error: ' + error.message); // Handle error
             }
         };
+
     </script>
-    <script>
-        function redirectToURL(selectedValue) {
-            // Check if the selected value is a valid URL
-            if (selectedValue) {
-                window.location.href = selectedValue; // Redirect to the selected URL
-            }
-        }
-    </script>
+   
 </body>
 </html>

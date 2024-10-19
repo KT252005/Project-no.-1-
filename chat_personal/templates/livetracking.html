@@ -20,9 +20,6 @@
             max-width: 320px; /* Increased the max width */
             max-height: 320px; /* Increased the max height */
         }
-        {% comment %} .gauge humidityGauge{
-
-        } {% endcomment %}
 
         h3 {
             text-align: center;
@@ -42,11 +39,11 @@
     <div class="gauge-container">
         <div>
             <canvas id="temperatureGauge" class="gauge-item"></canvas>
-            <h3>Temperature (°C)</h3>
+            <h3>Temperature (°C): <span id="temperatureValue">--</span></h3>
         </div>
         <div>
             <canvas id="humidityGauge" class="gauge-item"></canvas>
-            <h3>Humidity (%)</h3>
+            <h3>Humidity (%): <span id="humidityValue">--</span></h3>
         </div>
     </div>
 
@@ -81,16 +78,27 @@
         const temperatureGauge = createGauge("temperatureGauge", 50);
         const humidityGauge = createGauge("humidityGauge", 100);
 
-        // Function to fetch data from ESP
+        // Function to fetch data from the API
         async function fetchSensorData() {
             try {
-                const response = await fetch('http://your-esp-ip/sensor-data'); // Replace with actual endpoint
+                const response = await fetch('/iotdashboard/message/');
                 const data = await response.json();
+                
+                // Log the data to see if it's fetched correctly
+                console.log(data);
 
-                // Assuming the ESP returns { temperature: 24, humidity: 60 }
-                if (data.temperature !== undefined && data.humidity !== undefined) {
-                    temperatureGauge.set(data.temperature);
-                    humidityGauge.set(data.humidity);
+                // Accessing temperature and humidity inside the 'message' field
+                if (data.status === "success" && data.message.temperature !== undefined && data.message.humidity !== undefined) {
+                    const temperature = data.message.temperature;
+                    const humidity = data.message.humidity;
+                    
+                    // Update gauges
+                    temperatureGauge.set(temperature);
+                    humidityGauge.set(humidity);
+
+                    // Update text display
+                    document.getElementById('temperatureValue').innerText = `${temperature.toFixed(1)} °C`;
+                    document.getElementById('humidityValue').innerText = `${humidity.toFixed(1)} %`;
                 } else {
                     console.error('Invalid data format:', data);
                 }

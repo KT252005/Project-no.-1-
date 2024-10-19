@@ -18,14 +18,25 @@ topic = "sensor"  # Topic to subscribe to
 # Callback for when a message is received from the broker
 def on_message(client, userdata, msg):
     global latest_temperature, latest_humidity
-    # Assuming the message is a JSON string
+    # Log the raw payload
+    raw_message = msg.payload.decode()
+    
+    print(f"Raw MQTT message: {raw_message}")  # Log the full message
+    
+    # Attempt to parse the message as JSON
     try:
-        data = json.loads(msg.payload.decode())
-        latest_temperature = data.get('temperature', latest_temperature)
-        latest_humidity = data.get('humidity', latest_humidity)
-        print(f"Received message: {data} on topic {msg.topic}")
-    except json.JSONDecodeError:
-        print("Failed to decode JSON message")
+        data = json.loads(raw_message)
+        # Ensure temperature and humidity keys are in the data
+        if 'temperature' in data and 'humidity' in data:
+            latest_temperature = data['temperature']
+            latest_humidity = data['humidity']
+            print(f"Received message: {data} on topic {msg.topic}")
+        else:
+            print("Message missing required fields: temperature and/or humidity")
+    except json.JSONDecodeError as e:
+        print(f"Failed to decode JSON message: {e}")  # Print specific error
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 # Callback for when the client connects to the broker
 def on_connect(client, userdata, flags, rc):
@@ -67,13 +78,32 @@ def get_latest_message(request):
 @csrf_exempt
 def publish_control_command(request):
     if request.method == 'POST':
-        command = request.POST.get('command')
         try:
-            mqtt_client.publish("webapp/control", command)  # Publish command to the "webapp/control" topic
-            return JsonResponse({'status': 'success', 'message': 'Command published successfully'})
+            # Parse the JSON data from the request body
+            data = json.loads(request.body.decode('utf-8'))
+            temperature = data.get('temperature')
+            humidity = data.get('humidity')
+
+            if temperature is not None and humidity is not None:
+                # Publish the temperature and humidity to the MQTT broker
+                payload = json.dumps({
+                    't': temperature,
+                    'h': humidity
+                })
+                mqtt_client.publish("setpoints", payload)  # Send the data in JSON format
+                print(payload)
+                return JsonResponse({'status': 'success', 'message': 'Temperature and humidity published successfully'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Missing temperature or humidity'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+    
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+  
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
 
 def publish_form(request):
     return render(request, "publish.html")
